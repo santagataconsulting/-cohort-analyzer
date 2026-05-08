@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APH Cohort Retention Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #f5f5f5;
+            color: #2c2c2a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #e5e5e0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888780;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section {
+            background: #f9f9f8;
+            border: 2px dashed #d3d1c7;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-section:hover {
+            border-color: #888780;
+            background: #fafaf9;
+        }
+
+        .upload-section.drag-over {
+            border-color: #185fa5;
+            background: #e6f1fb;
+        }
+
+        .upload-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #2c2c2a;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: #888780;
+            margin-top: 0.5rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-status {
+            font-size: 13px;
+            color: #888780;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 0.5px solid #d3d1c7;
+        }
+
+        .file-status.loaded {
+            color: #27500a;
+        }
+
+        .file-status.loaded::before {
+            content: "✓ ";
+            font-weight: bold;
+        }
+
+        .error {
+            background: #fcebeb;
+            color: #501313;
+            border: 0.5px solid #f7c1c1;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 13px;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #e5e5e0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .controls.visible {
+            display: block;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c2c2a;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 0.5px solid #d3d1c7;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #2c2c2a;
+        }
+
+        .tab-btn:hover {
+            border-color: #888780;
+            background: #f9f9f8;
+        }
+
+        .tab-btn.active {
+            background: #185fa5;
+            border-color: #185fa5;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 0.5px solid #e5e5e0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888780;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2c2c2a;
+        }
+
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            border: 0.5px solid #e5e5e0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .table-section.visible {
+            display: block;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #2c2c2a;
+        }
+
+        .download-btn {
+            background: white;
+            border: 0.5px solid #d3d1c7;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #2c2c2a;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .download-btn:hover {
+            background: #f9f9f8;
+            border-color: #888780;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 0.5px solid #e5e5e0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f9f9f8;
+            border-bottom: 0.5px solid #e5e5e0;
+        }
+
+        th {
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 500;
+            color: #2c2c2a;
+            white-space: nowrap;
+            border-right: 0.5px solid #e5e5e0;
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 0.5px solid #e5e5e0;
+            border-right: 0.5px solid #e5e5e0;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        tbody tr:hover {
+            background: #fafaf9;
+        }
+
+        .cohort-label {
+            font-weight: 500;
+            color: #2c2c2a;
+        }
+
+        .count {
+            text-align: right;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #2c2c2a;
+        }
+
+        .percentage {
+            text-align: right;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #888780;
+            font-size: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #888780;
+            font-size: 14px;
+        }
+
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #888780;
+            margin-left: 4px;
+            animation: blink 1.4s infinite;
+            animation-fill-mode: both;
+        }
+
+        @keyframes blink {
+            0%, 20%, 50%, 80%, 100% { opacity: 1; }
+            40% { opacity: 0.3; }
+            60% { opacity: 0.5; }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #888780;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .table-wrapper {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>APH Cohort Retention Analyzer</h1>
+            <p class="subtitle">Upload your Salesforce CSV export to generate retention reports by episode of care</p>
+
+            <div class="upload-section" id="uploadSection">
+                <label class="upload-label">Drag and drop your CSV file here, or click to browse</label>
+                <input type="file" id="csvFile" accept=".csv" />
+                <p class="upload-hint">Supports files up to 10MB</p>
+            </div>
+
+            <div id="errorContainer"></div>
+
+            <div class="file-status" id="fileStatus">No file loaded</div>
+        </div>
+
+        <div class="controls" id="controls">
+            <div class="control-group">
+                <label class="control-label">Data loaded and ready. Select a report view below.</label>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total Episodes</div>
+                <div class="stat-value" id="totalOpps">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Cohorts</div>
+                <div class="stat-value" id="totalCohorts">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Max Month Offset</div>
+                <div class="stat-value" id="maxOffset">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Date Range</div>
+                <div class="stat-value" id="dateRange" style="font-size: 12px;">-</div>
+            </div>
+        </div>
+
+        <div class="tabs" id="tabs" style="display: none;"></div>
+
+        <div id="tablesContainer"></div>
+    </div>
+
+    <script>
+        // IndexedDB setup
+        let db;
+        const dbName = 'CohortAnalyzerDB';
+        const storeName = 'csvData';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(storeName)) {
+                        database.createObjectStore(storeName);
+                    }
+                };
+            });
+        }
+
+        function saveToIndexedDB(data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put(data, 'csvData');
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve();
+            });
+        }
+
+        function loadFromIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.get('csvData');
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        // Data processing
+        let rawData = [];
+        let processedData = {};
+
+        function getMonthString(date) {
+            const d = new Date(date);
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        }
+
+        function getCohortMonth(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            return new Date(year, month, 1);
+        }
+
+        function getMonthOffset(evalDate, visitDate) {
+            const eval = new Date(evalDate);
+            const visit = new Date(visitDate);
+
+            const evalYear = eval.getFullYear();
+            const evalMonth = eval.getMonth();
+            const visitYear = visit.getFullYear();
+            const visitMonth = visit.getMonth();
+
+            const offset = 12 * (visitYear - evalYear) + (visitMonth - evalMonth) + 1;
+            return Math.max(1, offset);
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim().replace(/^"|"$/g, ''));
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim().replace(/^"|"$/g, ''));
+
+                const row = {};
+                headers.forEach((h, idx) => {
+                    row[h] = values[idx] || '';
+                });
+                data.push(row);
+            }
+
+            return data;
+        }
+
+        function processData(data) {
+            const cohorts = {};
+            const allProviders = new Set();
+
+            data.forEach(row => {
+                const oppId = row['Opportunity ID 18 Digit'];
+                const evalDate = row['First Attended Med Mgmt Eval'];
+                const visitDate = row['Date'];
+                const subject = row['Subject'] || '';
+                const provider = row['Provider Name'] || '';
+                const evalType = row['First Med Mgmt Eval Type'] || '';
+
+                if (!oppId || !evalDate || !visitDate) return;
+
+                allProviders.add(provider);
+
+                const cohortMonth = getMonthString(getCohortMonth(evalDate));
+                const monthOffset = getMonthOffset(evalDate, visitDate);
+
+                if (!cohorts[cohortMonth]) {
+                    cohorts[cohortMonth] = { opps: new Set(), offsetData: {} };
+                }
+
+                cohorts[cohortMonth].opps.add(oppId);
+
+                if (!cohorts[cohortMonth].offsetData[monthOffset]) {
+                    cohorts[cohortMonth].offsetData[monthOffset] = new Set();
+                }
+                cohorts[cohortMonth].offsetData[monthOffset].add(oppId);
+
+                row._cohortMonth = cohortMonth;
+                row._monthOffset = monthOffset;
+                row._isTelemed = subject.includes('TELE');
+                row._isTherapy = subject.includes('THERAPY');
+            });
+
+            return { cohorts, providers: Array.from(allProviders).sort() };
+        }
+
+        function generateReport(cohorts, data, filters) {
+            const report = {};
+
+            Object.entries(cohorts).forEach(([cohortMonth, cohortData]) => {
+                let relevantOffsets = {};
+
+                data.forEach(row => {
+                    if (row._cohortMonth !== cohortMonth) return;
+
+                    let include = true;
+
+                    if (filters.telemedOnly && !row._isTelemed) include = false;
+                    if (filters.inPersonOnly && row._isTelemed) include = false;
+                    if (filters.therapyOnly && !row._isTherapy) include = false;
+                    if (filters.medMgmtOnly && row._isTherapy) include = false;
+
+                    if (filters.providers && filters.providers.length > 0) {
+                        if (!filters.providers.includes(row['Provider Name'])) include = false;
+                    }
+
+                    if (include) {
+                        const oppId = row['Opportunity ID 18 Digit'];
+                        const offset = row._monthOffset;
+
+                        if (!relevantOffsets[offset]) relevantOffsets[offset] = new Set();
+                        relevantOffsets[offset].add(oppId);
+                    }
+                });
+
+                const cohortSize = Object.values(relevantOffsets).reduce((max, set) => Math.max(max, set.size), 0) ||
+                    (filters.providers && filters.providers.length > 0 ? 0 : cohortData.opps.size);
+
+                report[cohortMonth] = {
+                    cohortSize: cohortSize,
+                    offsetData: relevantOffsets
+                };
+            });
+
+            return report;
+        }
+
+        function renderTable(report, containerId, title) {
+            const cohortMonths = Object.keys(report).sort((a, b) => new Date(a) - new Date(b));
+
+            let maxOffset = 0;
+            Object.values(report).forEach(cohort => {
+                if (Object.keys(cohort.offsetData).length > 0) {
+                    maxOffset = Math.max(maxOffset, ...Object.keys(cohort.offsetData).map(Number));
+                }
+            });
+
+            let html = `<div class="table-section visible" id="${containerId}">
+                <div class="table-title">${title}</div>
+                <button class="download-btn" onclick="downloadTable('${containerId}', '${title}')">Download as CSV</button>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr>
+                            <th>Cohort Month</th>
+                            <th>Cohort Size</th>`;
+
+            for (let i = 1; i <= maxOffset; i++) {
+                html += `<th colspan="2" style="text-align: center;">Month ${i}</th>`;
+            }
+
+            html += `</tr><tr><th colspan="2"></th>`;
+            for (let i = 1; i <= maxOffset; i++) {
+                html += `<th style="text-align: center; border-right: 0.5px solid #e5e5e0; width: 50%;">Count</th>
+                         <th style="text-align: center;">%</th>`;
+            }
+            html += `</tr></thead><tbody>`;
+
+            cohortMonths.forEach(cohortMonth => {
+                const cohort = report[cohortMonth];
+                html += `<tr><td class="cohort-label">${cohortMonth}</td><td class="count">${cohort.cohortSize}</td>`;
+
+                for (let i = 1; i <= maxOffset; i++) {
+                    const opps = cohort.offsetData[i] ? cohort.offsetData[i].size : 0;
+                    const pct = cohort.cohortSize > 0 ? ((opps / cohort.cohortSize) * 100).toFixed(2) : '0.00';
+                    html += `<td class="count">${opps}</td><td class="percentage">${pct}%</td>`;
+                }
+
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table>
+                </div>
+            </div>`;
+
+            document.getElementById('tablesContainer').innerHTML += html;
+        }
+
+        function downloadTable(containerId, title) {
+            const table = document.querySelector(`#${containerId} table`);
+            let csv = '';
+
+            table.querySelectorAll('thead tr:not(:last-child) th').forEach((th, idx) => {
+                if (idx > 0 && th.getAttribute('colspan') === '2') {
+                    csv += ',' + th.textContent;
+                } else if (idx > 0 && !th.getAttribute('colspan')) {
+                    // Skip, it's a subheader
+                } else if (idx === 0) {
+                    csv += th.textContent;
+                }
+            });
+
+            // Add subheader row
+            csv += '\nCohort Month,Cohort Size';
+            const headerRow = Array.from(table.querySelectorAll('thead tr:last-child th')).slice(2);
+            headerRow.forEach(th => {
+                csv += ',' + th.textContent;
+            });
+            csv += '\n';
+
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                let row = '';
+                cells.forEach((td, idx) => {
+                    if (idx === 0) row += td.textContent;
+                    else row += ',' + td.textContent.trim();
+                });
+                csv += row + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+        }
+
+        function renderReports() {
+            document.getElementById('tablesContainer').innerHTML = '';
+            document.getElementById('statsGrid').style.display = 'grid';
+
+            document.getElementById('totalOpps').textContent = new Set(rawData.map(r => r['Opportunity ID 18 Digit'])).size;
+            document.getElementById('totalCohorts').textContent = Object.keys(processedData.cohorts).length;
+
+            let maxOffset = 0;
+            Object.values(processedData.cohorts).forEach(cohort => {
+                maxOffset = Math.max(maxOffset, ...Object.keys(cohort.offsetData).map(Number));
+            });
+            document.getElementById('maxOffset').textContent = maxOffset;
+
+            const dates = rawData.map(r => new Date(r['First Attended Med Mgmt Eval'])).filter(d => !isNaN(d));
+            if (dates.length > 0) {
+                const minDate = new Date(Math.min(...dates)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                const maxDate = new Date(Math.max(...dates)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                document.getElementById('dateRange').textContent = `${minDate} to ${maxDate}`;
+            }
+
+            // Master report
+            const masterReport = generateReport(processedData.cohorts, rawData, {});
+            renderTable(masterReport, 'master-report', 'Master Report (All Data)');
+
+            // Telemed vs In-Person
+            const telemedReport = generateReport(processedData.cohorts, rawData, { telemedOnly: true });
+            const inPersonReport = generateReport(processedData.cohorts, rawData, { inPersonOnly: true });
+            renderTable(telemedReport, 'telemed-report', 'Telemed Only');
+            renderTable(inPersonReport, 'inperson-report', 'In-Person Only');
+
+            // Khan, McGee, Houck combined
+            const topProvidersReport = generateReport(processedData.cohorts, rawData, {
+                providers: ['KHAN', 'MCGEE', 'HOUCK'].filter(p =>
+                    processedData.providers.some(prov => prov.toUpperCase().includes(p))
+                )
+            });
+            renderTable(topProvidersReport, 'top-providers-report', 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)');
+
+            // All other providers
+            const topProviderNames = processedData.providers.filter(p => {
+                const upper = p.toUpperCase();
+                return upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK');
+            });
+            const otherProviders = processedData.providers.filter(p => !topProviderNames.includes(p));
+            if (otherProviders.length > 0) {
+                const otherReport = generateReport(processedData.cohorts, rawData, { providers: otherProviders });
+                renderTable(otherReport, 'other-providers-report', 'All Other Providers (Combined)');
+            }
+
+            // Individual providers (not Khan, McGee, Houck)
+            otherProviders.forEach(provider => {
+                if (provider.trim()) {
+                    const providerReport = generateReport(processedData.cohorts, rawData, { providers: [provider] });
+                    renderTable(providerReport, `provider-${provider.replace(/\s+/g, '-')}`, `${provider}`);
+                }
+            });
+
+            document.getElementById('controls').classList.add('visible');
+            document.getElementById('tabs').style.display = 'flex';
+        }
+
+        async function handleFileUpload(file) {
+            const reader = new FileReader();
+
+            reader.onload = async function(event) {
+                try {
+                    const text = event.target.result;
+                    rawData = parseCSV(text);
+
+                    if (rawData.length === 0) {
+                        throw new Error('CSV contains no data rows');
+                    }
+
+                    const result = processData(rawData);
+                    processedData = result;
+
+                    // Save to IndexedDB
+                    await saveToIndexedDB({
+                        rawData: rawData,
+                        processedData: processedData,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    document.getElementById('errorContainer').innerHTML = '';
+                    document.getElementById('fileStatus').textContent = `Loaded ${rawData.length} records`;
+                    document.getElementById('fileStatus').classList.add('loaded');
+
+                    renderReports();
+                } catch (error) {
+                    document.getElementById('errorContainer').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Event listeners
+        document.getElementById('uploadSection').addEventListener('click', () => {
+            document.getElementById('csvFile').click();
+        });
+
+        document.getElementById('uploadSection').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadSection').classList.add('drag-over');
+        });
+
+        document.getElementById('uploadSection').addEventListener('dragleave', () => {
+            document.getElementById('uploadSection').classList.remove('drag-over');
+        });
+
+        document.getElementById('uploadSection').addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadSection').classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                handleFileUpload(file);
+            }
+        });
+
+        document.getElementById('csvFile').addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        // Initialize
+        initDB().then(async () => {
+            const savedData = await loadFromIndexedDB();
+            if (savedData) {
+                rawData = savedData.rawData;
+                processedData = savedData.processedData;
+                document.getElementById('fileStatus').textContent = `Loaded ${rawData.length} records (from last session)`;
+                document.getElementById('fileStatus').classList.add('loaded');
+                renderReports();
+            }
+        }).catch(err => {
+            console.error('IndexedDB error:', err);
+        });
+    </script>
+</body>
+</html>
