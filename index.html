@@ -758,19 +758,24 @@
             for (let i = 1; i <= maxOffset; i++) {
                 headerHtml += `<th colspan="2">Month ${i}</th>`;
             }
-            headerHtml += '</tr><tr><th colspan="2"></th>';
+            headerHtml += '<th colspan="2">Row Total</th></tr><tr><th colspan="2"></th>';
             for (let i = 1; i <= maxOffset; i++) {
                 headerHtml += `<th>Count</th><th>%</th>`;
             }
-            headerHtml += '</tr>';
+            headerHtml += '<th colspan="2"></th></tr>';
 
             document.getElementById('tableHead').innerHTML = headerHtml;
 
             let bodyHtml = '';
+            const columnTotals = {};
+            let grandTotal = 0;
+
             for (let i = 0; i < cohortMonths.length; i++) {
                 const cohortMonth = cohortMonths[i];
                 const cohort = report[cohortMonth];
                 bodyHtml += `<tr><td>${cohortMonth}</td><td>${cohort.cohortSize}</td>`;
+
+                let cohortTotalFollowUps = 0;
 
                 for (let j = 1; j <= maxOffset; j++) {
                     const opps = cohort.offsetData[j] ? cohort.offsetData[j].size : 0;
@@ -781,10 +786,39 @@
 
                     bodyHtml += `<td class="count ${countClass}">${countDisplay}</td>`;
                     bodyHtml += `<td class="percentage ${pctClass}">${pctDisplay ? pctDisplay + '%' : ''}</td>`;
+
+                    // Track column totals
+                    if (!columnTotals[j]) columnTotals[j] = 0;
+                    columnTotals[j] += opps;
+                    cohortTotalFollowUps += opps;
+                    grandTotal += opps;
                 }
 
+                // Row total: total follow-ups / cohort size
+                const rowTotal = cohort.cohortSize > 0 ? (cohortTotalFollowUps / cohort.cohortSize).toFixed(2) : '0.00';
+                bodyHtml += `<td colspan="2" style="font-weight: 700; text-align: center; border-left: 2px solid #e5e5e5;">${rowTotal}</td>`;
                 bodyHtml += '</tr>';
             }
+
+            // Add totals row at bottom
+            bodyHtml += '<tr style="background: #f9f9f9; border-top: 2px solid #e5e5e5; font-weight: 700;"><td>TOTALS</td><td style="border-right: 2px solid #e5e5e5;"></td>';
+
+            // Get total cohort size (sum of all cohort sizes)
+            let totalCohortSize = 0;
+            for (let i = 0; i < cohortMonths.length; i++) {
+                totalCohortSize += report[cohortMonths[i]].cohortSize;
+            }
+
+            for (let j = 1; j <= maxOffset; j++) {
+                const colTotal = columnTotals[j] || 0;
+                const colPct = totalCohortSize > 0 ? ((colTotal / totalCohortSize) * 100).toFixed(1) : '0.0';
+                const pctClass = getPercentageClass(colPct);
+
+                bodyHtml += `<td class="count" style="border-top: 2px solid #e5e5e5;">${colTotal > 0 ? colTotal : ''}</td>`;
+                bodyHtml += `<td class="percentage ${pctClass}" style="border-top: 2px solid #e5e5e5;">${colPct}%</td>`;
+            }
+
+            bodyHtml += `<td colspan="2" style="border-top: 2px solid #e5e5e5; border-left: 2px solid #e5e5e5; text-align: center;"></td></tr>`;
 
             document.getElementById('tableBody').innerHTML = bodyHtml;
         }
