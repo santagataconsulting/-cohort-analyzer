@@ -241,26 +241,48 @@
             border: 0.5px solid #e5e5e0;
             border-radius: 8px;
             margin-bottom: 1rem;
+            position: relative;
         }
 
         table {
-            width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 11px;
+            width: 100%;
         }
 
         thead {
             background: #f9f9f8;
             border-bottom: 0.5px solid #e5e5e0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         th {
-            padding: 12px 8px;
+            padding: 6px 4px;
             text-align: left;
             font-weight: 500;
             color: #2c2c2a;
             white-space: nowrap;
             border-right: 0.5px solid #e5e5e0;
+            background: #f9f9f8;
+        }
+
+        th:first-child,
+        th:nth-child(2) {
+            position: sticky;
+            left: 0;
+            z-index: 11;
+        }
+
+        th:first-child {
+            left: 0;
+            min-width: 120px;
+        }
+
+        th:nth-child(2) {
+            left: 120px;
+            min-width: 60px;
         }
 
         th:last-child {
@@ -268,13 +290,36 @@
         }
 
         td {
-            padding: 10px 8px;
+            padding: 4px 4px;
             border-bottom: 0.5px solid #e5e5e0;
             border-right: 0.5px solid #e5e5e0;
         }
 
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 9;
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        td:nth-child(2) {
+            position: sticky;
+            left: 120px;
+            background: white;
+            z-index: 9;
+            min-width: 60px;
+            text-align: right;
+        }
+
         td:last-child {
             border-right: none;
+        }
+
+        tbody tr:hover td:first-child,
+        tbody tr:hover td:nth-child(2) {
+            background: #fafaf9;
         }
 
         tbody tr:hover {
@@ -448,9 +493,40 @@
             });
         }
 
-        // Data processing
-        let rawData = [];
-        let processedData = {};
+        // Subject filters
+        const evalSubjects = [
+            'CA MED - PSYCH EVAL',
+            'CA TELE MED - PSYCH EVAL',
+            'MED - CA PSYCH EVAL',
+            'Med - Psych Eval',
+            'MED - PSYCH. EVAL',
+            'TELE MED - CA PSYCH EVAL',
+            'TELE MED - PSYCH. EVAL'
+        ];
+
+        const followUpSubjects = [
+            'CA MED - FOLLOW UP',
+            'CA MED/THER - FOLLOW UP',
+            'CA TELE MED - FOLLOW UP',
+            'CA TELE MED/THER - FOLLOW UP',
+            'MED - CA FOLLOW UP',
+            'MED - FOLLOW UP',
+            'MED/THER - CA FOLLOW UP',
+            'MED/THER - FOLLOW UP',
+            'TELE MED - CA PSYCH EVAL',
+            'TELE MED - FOLLOW UP',
+            'TELE MED - FOLLOW UP, MED - FOLLOW UP',
+            'TELE MED/THER - CA FOLLOW UP',
+            'TELE MED/THER - FOLLOW UP'
+        ];
+
+        function isEvalSubject(subject) {
+            return evalSubjects.some(s => subject && subject.toUpperCase().includes(s.toUpperCase()));
+        }
+
+        function isFollowUpSubject(subject) {
+            return followUpSubjects.some(s => subject && subject.toUpperCase().includes(s.toUpperCase()));
+        }
 
         function getMonthString(date) {
             const d = new Date(date);
@@ -515,79 +591,98 @@
         function processData(data) {
             const cohorts = {};
             const allProviders = new Set();
+            const processed = [];
 
-            data.forEach(row => {
+            // Single pass through data
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
                 const oppId = row['Opportunity ID 18 Digit'];
                 const evalDate = row['First Attended Med Mgmt Eval'];
                 const visitDate = row['Date'];
                 const subject = row['Subject'] || '';
                 const provider = row['Provider Name'] || '';
-                const evalType = row['First Med Mgmt Eval Type'] || '';
 
-                if (!oppId || !evalDate || !visitDate) return;
+                if (!oppId || !evalDate || !visitDate) continue;
 
                 allProviders.add(provider);
 
                 const cohortMonth = getMonthString(getCohortMonth(evalDate));
                 const monthOffset = getMonthOffset(evalDate, visitDate);
+                const isTelemed = subject.includes('TELE');
+                const isEval = isEvalSubject(subject);
+                const isFollowUp = isFollowUpSubject(subject);
 
                 if (!cohorts[cohortMonth]) {
-                    cohorts[cohortMonth] = { opps: new Set(), offsetData: {} };
+                    cohorts[cohortMonth] = { 
+                        evalOpps: [],
+                        followUps: []
+                    };
                 }
 
-                cohorts[cohortMonth].opps.add(oppId);
-
-                if (!cohorts[cohortMonth].offsetData[monthOffset]) {
-                    cohorts[cohortMonth].offsetData[monthOffset] = new Set();
+                // Store eval and follow-up data separately
+                if (isEval) {
+                    cohorts[cohortMonth].evalOpps.push({
+                        oppId, provider, isTelemed
+                    });
+                } else if (isFollowUp) {
+                    cohorts[cohortMonth].followUps.push({
+                        oppId, monthOffset, provider, isTelemed
+                    });
                 }
-                cohorts[cohortMonth].offsetData[monthOffset].add(oppId);
 
-                row._cohortMonth = cohortMonth;
-                row._monthOffset = monthOffset;
-                row._isTelemed = subject.includes('TELE');
-                row._isTherapy = subject.includes('THERAPY');
-            });
+                processed.push({
+                    oppId, cohortMonth, monthOffset, provider, isTelemed, isEval, isFollowUp
+                });
+            }
 
-            return { cohorts, providers: Array.from(allProviders).sort() };
+            return { cohorts, providers: Array.from(allProviders).sort(), processed };
         }
 
-        function generateReport(cohorts, data, filters) {
+        function generateReport(cohorts, processed, filters) {
             const report = {};
 
-            Object.entries(cohorts).forEach(([cohortMonth, cohortData]) => {
-                let relevantOffsets = {};
+            for (const cohortMonth in cohorts) {
+                const cohortData = cohorts[cohortMonth];
+                const offsetData = {};
 
-                data.forEach(row => {
-                    if (row._cohortMonth !== cohortMonth) return;
-
+                // Get filtered eval opps for this cohort
+                let evalOppsInCohort = new Set();
+                for (let i = 0; i < cohortData.evalOpps.length; i++) {
+                    const evalOpp = cohortData.evalOpps[i];
                     let include = true;
 
-                    if (filters.telemedOnly && !row._isTelemed) include = false;
-                    if (filters.inPersonOnly && row._isTelemed) include = false;
-                    if (filters.therapyOnly && !row._isTherapy) include = false;
-                    if (filters.medMgmtOnly && row._isTherapy) include = false;
-
+                    if (filters.telemedOnly && !evalOpp.isTelemed) include = false;
+                    if (filters.inPersonOnly && evalOpp.isTelemed) include = false;
                     if (filters.providers && filters.providers.length > 0) {
-                        if (!filters.providers.includes(row['Provider Name'])) include = false;
+                        if (!filters.providers.includes(evalOpp.provider)) include = false;
+                    }
+
+                    if (include) evalOppsInCohort.add(evalOpp.oppId);
+                }
+
+                // Count follow-ups only for opps in this filtered cohort
+                for (let i = 0; i < cohortData.followUps.length; i++) {
+                    const fu = cohortData.followUps[i];
+                    if (!evalOppsInCohort.has(fu.oppId)) continue;
+
+                    let include = true;
+                    if (filters.telemedOnly && !fu.isTelemed) include = false;
+                    if (filters.inPersonOnly && fu.isTelemed) include = false;
+                    if (filters.providers && filters.providers.length > 0) {
+                        if (!filters.providers.includes(fu.provider)) include = false;
                     }
 
                     if (include) {
-                        const oppId = row['Opportunity ID 18 Digit'];
-                        const offset = row._monthOffset;
-
-                        if (!relevantOffsets[offset]) relevantOffsets[offset] = new Set();
-                        relevantOffsets[offset].add(oppId);
+                        if (!offsetData[fu.monthOffset]) offsetData[fu.monthOffset] = new Set();
+                        offsetData[fu.monthOffset].add(fu.oppId);
                     }
-                });
-
-                const cohortSize = Object.values(relevantOffsets).reduce((max, set) => Math.max(max, set.size), 0) ||
-                    (filters.providers && filters.providers.length > 0 ? 0 : cohortData.opps.size);
+                }
 
                 report[cohortMonth] = {
-                    cohortSize: cohortSize,
-                    offsetData: relevantOffsets
+                    cohortSize: evalOppsInCohort.size,
+                    offsetData: offsetData
                 };
-            });
+            }
 
             return report;
         }
@@ -596,11 +691,13 @@
             const cohortMonths = Object.keys(report).sort((a, b) => new Date(a) - new Date(b));
 
             let maxOffset = 0;
-            Object.values(report).forEach(cohort => {
-                if (Object.keys(cohort.offsetData).length > 0) {
-                    maxOffset = Math.max(maxOffset, ...Object.keys(cohort.offsetData).map(Number));
+            for (const cohortMonth in report) {
+                const cohort = report[cohortMonth];
+                for (const offset in cohort.offsetData) {
+                    const o = parseInt(offset);
+                    if (o > maxOffset) maxOffset = o;
                 }
-            });
+            }
 
             let html = `<div class="table-section visible" id="${containerId}">
                 <div class="table-title">${title}</div>
@@ -609,31 +706,31 @@
                     <table>
                         <thead><tr>
                             <th>Cohort Month</th>
-                            <th>Cohort Size</th>`;
+                            <th>Size</th>`;
 
             for (let i = 1; i <= maxOffset; i++) {
-                html += `<th colspan="2" style="text-align: center;">Month ${i}</th>`;
+                html += `<th colspan="2">M${i}</th>`;
             }
 
             html += `</tr><tr><th colspan="2"></th>`;
             for (let i = 1; i <= maxOffset; i++) {
-                html += `<th style="text-align: center; border-right: 0.5px solid #e5e5e0; width: 50%;">Count</th>
-                         <th style="text-align: center;">%</th>`;
+                html += `<th>Count</th><th>%</th>`;
             }
             html += `</tr></thead><tbody>`;
 
-            cohortMonths.forEach(cohortMonth => {
+            for (let i = 0; i < cohortMonths.length; i++) {
+                const cohortMonth = cohortMonths[i];
                 const cohort = report[cohortMonth];
-                html += `<tr><td class="cohort-label">${cohortMonth}</td><td class="count">${cohort.cohortSize}</td>`;
+                html += `<tr><td>${cohortMonth}</td><td>${cohort.cohortSize}</td>`;
 
-                for (let i = 1; i <= maxOffset; i++) {
-                    const opps = cohort.offsetData[i] ? cohort.offsetData[i].size : 0;
+                for (let j = 1; j <= maxOffset; j++) {
+                    const opps = cohort.offsetData[j] ? cohort.offsetData[j].size : 0;
                     const pct = cohort.cohortSize > 0 ? ((opps / cohort.cohortSize) * 100).toFixed(2) : '0.00';
-                    html += `<td class="count">${opps}</td><td class="percentage">${pct}%</td>`;
+                    html += `<td>${opps}</td><td>${pct}%</td>`;
                 }
 
                 html += `</tr>`;
-            });
+            }
 
             html += `</tbody></table>
                 </div>
@@ -686,13 +783,23 @@
             document.getElementById('tablesContainer').innerHTML = '';
             document.getElementById('statsGrid').style.display = 'grid';
 
-            document.getElementById('totalOpps').textContent = new Set(rawData.map(r => r['Opportunity ID 18 Digit'])).size;
+            const uniqueOpps = new Set();
+            for (let i = 0; i < rawData.length; i++) {
+                uniqueOpps.add(rawData[i]['Opportunity ID 18 Digit']);
+            }
+
+            document.getElementById('totalOpps').textContent = uniqueOpps.size;
             document.getElementById('totalCohorts').textContent = Object.keys(processedData.cohorts).length;
 
             let maxOffset = 0;
-            Object.values(processedData.cohorts).forEach(cohort => {
-                maxOffset = Math.max(maxOffset, ...Object.keys(cohort.offsetData).map(Number));
-            });
+            for (const cohortMonth in processedData.cohorts) {
+                const cohortData = processedData.cohorts[cohortMonth];
+                for (let i = 0; i < cohortData.followUps.length; i++) {
+                    if (cohortData.followUps[i].monthOffset > maxOffset) {
+                        maxOffset = cohortData.followUps[i].monthOffset;
+                    }
+                }
+            }
             document.getElementById('maxOffset').textContent = maxOffset;
 
             const dates = rawData.map(r => new Date(r['First Attended Med Mgmt Eval'])).filter(d => !isNaN(d));
@@ -703,41 +810,43 @@
             }
 
             // Master report
-            const masterReport = generateReport(processedData.cohorts, rawData, {});
+            const masterReport = generateReport(processedData.cohorts, processedData.processed, {});
             renderTable(masterReport, 'master-report', 'Master Report (All Data)');
 
             // Telemed vs In-Person
-            const telemedReport = generateReport(processedData.cohorts, rawData, { telemedOnly: true });
-            const inPersonReport = generateReport(processedData.cohorts, rawData, { inPersonOnly: true });
+            const telemedReport = generateReport(processedData.cohorts, processedData.processed, { telemedOnly: true });
+            const inPersonReport = generateReport(processedData.cohorts, processedData.processed, { inPersonOnly: true });
             renderTable(telemedReport, 'telemed-report', 'Telemed Only');
             renderTable(inPersonReport, 'inperson-report', 'In-Person Only');
 
             // Khan, McGee, Houck combined
-            const topProvidersReport = generateReport(processedData.cohorts, rawData, {
-                providers: ['KHAN', 'MCGEE', 'HOUCK'].filter(p =>
-                    processedData.providers.some(prov => prov.toUpperCase().includes(p))
-                )
-            });
-            renderTable(topProvidersReport, 'top-providers-report', 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)');
-
-            // All other providers
-            const topProviderNames = processedData.providers.filter(p => {
+            const topProviders = processedData.providers.filter(p => {
                 const upper = p.toUpperCase();
                 return upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK');
             });
-            const otherProviders = processedData.providers.filter(p => !topProviderNames.includes(p));
+            if (topProviders.length > 0) {
+                const topProvidersReport = generateReport(processedData.cohorts, processedData.processed, { providers: topProviders });
+                renderTable(topProvidersReport, 'top-providers-report', 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)');
+            }
+
+            // All other providers
+            const otherProviders = processedData.providers.filter(p => {
+                const upper = p.toUpperCase();
+                return !(upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK'));
+            });
             if (otherProviders.length > 0) {
-                const otherReport = generateReport(processedData.cohorts, rawData, { providers: otherProviders });
+                const otherReport = generateReport(processedData.cohorts, processedData.processed, { providers: otherProviders });
                 renderTable(otherReport, 'other-providers-report', 'All Other Providers (Combined)');
             }
 
             // Individual providers (not Khan, McGee, Houck)
-            otherProviders.forEach(provider => {
+            for (let i = 0; i < otherProviders.length; i++) {
+                const provider = otherProviders[i];
                 if (provider.trim()) {
-                    const providerReport = generateReport(processedData.cohorts, rawData, { providers: [provider] });
+                    const providerReport = generateReport(processedData.cohorts, processedData.processed, { providers: [provider] });
                     renderTable(providerReport, `provider-${provider.replace(/\s+/g, '-')}`, `${provider}`);
                 }
-            });
+            }
 
             document.getElementById('controls').classList.add('visible');
             document.getElementById('tabs').style.display = 'flex';
