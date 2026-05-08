@@ -12,71 +12,67 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-            background: #f5f5f5;
-            color: #2c2c2a;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
         }
 
         .header {
-            background: white;
-            border-radius: 12px;
-            border: 0.5px solid #e5e5e0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 3rem;
         }
 
         h1 {
-            font-size: 28px;
-            font-weight: 500;
+            font-size: 32px;
+            font-weight: 600;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 14px;
-            color: #888780;
+            font-size: 15px;
+            color: #666;
             margin-bottom: 2rem;
         }
 
-        .upload-section {
-            background: #f9f9f8;
-            border: 2px dashed #d3d1c7;
-            border-radius: 8px;
-            padding: 2rem;
+        .upload-zone {
+            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+            border: 2px dashed #d0d0d0;
+            border-radius: 12px;
+            padding: 3rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
         }
 
-        .upload-section:hover {
-            border-color: #888780;
-            background: #fafaf9;
+        .upload-zone:hover {
+            border-color: #999;
+            background: linear-gradient(135deg, #f0f0f0 0%, #fafafa 100%);
         }
 
-        .upload-section.drag-over {
-            border-color: #185fa5;
-            background: #e6f1fb;
+        .upload-zone.drag-over {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
         }
 
         .upload-label {
-            display: block;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
             margin-bottom: 0.5rem;
-            color: #2c2c2a;
+            display: block;
         }
 
         .upload-hint {
-            font-size: 13px;
-            color: #888780;
-            margin-top: 0.5rem;
+            font-size: 14px;
+            color: #999;
         }
 
         input[type="file"] {
@@ -85,14 +81,14 @@
 
         .file-status {
             font-size: 13px;
-            color: #888780;
+            color: #999;
             margin-top: 1rem;
             padding-top: 1rem;
-            border-top: 0.5px solid #d3d1c7;
+            border-top: 1px solid #e5e5e5;
         }
 
         .file-status.loaded {
-            color: #27500a;
+            color: #16a34a;
         }
 
         .file-status.loaded::before {
@@ -101,198 +97,214 @@
         }
 
         .error {
-            background: #fcebeb;
-            color: #501313;
-            border: 0.5px solid #f7c1c1;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1rem;
-            font-size: 13px;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            display: none;
+        }
+
+        .stats-grid.visible {
+            display: grid;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
         }
 
         .controls {
             background: white;
+            border: 1px solid #e5e5e5;
             border-radius: 12px;
-            border: 0.5px solid #e5e5e0;
             padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             display: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .controls.visible {
             display: block;
         }
 
-        .control-group {
-            margin-bottom: 1.5rem;
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
         }
 
-        .control-group:last-child {
-            margin-bottom: 0;
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .control-label {
             font-size: 13px;
-            font-weight: 500;
-            color: #2c2c2a;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-
-        .tab-btn {
-            background: white;
-            border: 0.5px solid #d3d1c7;
-            border-radius: 8px;
-            padding: 0.75rem 1.25rem;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #2c2c2a;
-        }
-
-        .tab-btn:hover {
-            border-color: #888780;
-            background: #f9f9f8;
-        }
-
-        .tab-btn.active {
-            background: #185fa5;
-            border-color: #185fa5;
-            color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            border: 0.5px solid #e5e5e0;
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #888780;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .stat-value {
-            font-size: 24px;
-            font-weight: 500;
-            color: #2c2c2a;
+        select {
+            padding: 0.75rem 1rem;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            background: white;
+            color: #1a1a1a;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        select:hover {
+            border-color: #999;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .table-section {
             background: white;
+            border: 1px solid #e5e5e5;
             border-radius: 12px;
-            border: 0.5px solid #e5e5e0;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
             display: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .table-section.visible {
             display: block;
         }
 
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
         .table-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 1rem;
-            color: #2c2c2a;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
         }
 
         .download-btn {
             background: white;
-            border: 0.5px solid #d3d1c7;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            font-size: 12px;
-            font-weight: 500;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            color: #2c2c2a;
+            color: #1a1a1a;
             transition: all 0.2s ease;
-            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .download-btn:hover {
-            background: #f9f9f8;
-            border-color: #888780;
+            background: #f5f5f5;
+            border-color: #999;
         }
 
         .table-wrapper {
             overflow-x: auto;
-            border: 0.5px solid #e5e5e0;
             border-radius: 8px;
-            margin-bottom: 1rem;
-            position: relative;
+            border: 1px solid #e5e5e5;
         }
 
         table {
-            border-collapse: collapse;
-            font-size: 11px;
             width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
         }
 
         thead {
-            background: #f9f9f8;
-            border-bottom: 0.5px solid #e5e5e0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            background: #f9f9f9;
+            border-bottom: 2px solid #e5e5e5;
         }
 
         th {
-            padding: 6px 4px;
+            padding: 1rem 0.75rem;
             text-align: left;
-            font-weight: 500;
-            color: #2c2c2a;
+            font-weight: 700;
+            color: #1a1a1a;
             white-space: nowrap;
-            border-right: 0.5px solid #e5e5e0;
-            background: #f9f9f8;
-        }
-
-        th:first-child,
-        th:nth-child(2) {
-            position: sticky;
-            left: 0;
-            z-index: 11;
-        }
-
-        th:first-child {
-            left: 0;
-            min-width: 120px;
-        }
-
-        th:nth-child(2) {
-            left: 120px;
-            min-width: 60px;
+            border-right: 1px solid #e5e5e5;
+            letter-spacing: 0.3px;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         th:last-child {
             border-right: none;
         }
 
+        th:first-child,
+        th:nth-child(2) {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: #f9f9f9;
+        }
+
+        th:first-child {
+            left: 0;
+            min-width: 140px;
+        }
+
+        th:nth-child(2) {
+            left: 140px;
+            min-width: 70px;
+        }
+
         td {
-            padding: 4px 4px;
-            border-bottom: 0.5px solid #e5e5e0;
-            border-right: 0.5px solid #e5e5e0;
+            padding: 0.9rem 0.75rem;
+            border-right: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        td:last-child {
+            border-right: none;
         }
 
         td:first-child {
@@ -300,101 +312,112 @@
             left: 0;
             background: white;
             z-index: 9;
-            min-width: 120px;
-            font-weight: 500;
+            min-width: 140px;
+            font-weight: 600;
+            color: #1a1a1a;
         }
 
         td:nth-child(2) {
             position: sticky;
-            left: 120px;
+            left: 140px;
             background: white;
             z-index: 9;
-            min-width: 60px;
-            text-align: right;
+            min-width: 70px;
+            text-align: center;
+            font-weight: 700;
+            color: #1a1a1a;
+            border-right: 2px solid #e5e5e5;
         }
 
-        td:last-child {
-            border-right: none;
+        tbody tr:hover {
+            background: #fafafa;
         }
 
         tbody tr:hover td:first-child,
         tbody tr:hover td:nth-child(2) {
-            background: #fafaf9;
-        }
-
-        tbody tr:hover {
-            background: #fafaf9;
-        }
-
-        .cohort-label {
-            font-weight: 500;
-            color: #2c2c2a;
+            background: #fafafa;
         }
 
         .count {
-            text-align: right;
-            font-family: 'Monaco', 'Courier New', monospace;
-            color: #2c2c2a;
+            text-align: center;
+            font-weight: 700;
+            color: #1a1a1a;
         }
 
         .percentage {
-            text-align: right;
-            font-family: 'Monaco', 'Courier New', monospace;
-            color: #888780;
-            font-size: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        /* Color coding for percentages */
+        .pct-excellent {
+            color: #15803d;
+            background: #f0fdf4;
+        }
+
+        .pct-good {
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .pct-fair {
+            color: #ea580c;
+            background: #fff7ed;
+        }
+
+        .pct-poor {
+            color: #991b1b;
+            background: #fef2f2;
+        }
+
+        .count-excellent {
+            color: #15803d;
+        }
+
+        .count-good {
+            color: #2563eb;
+        }
+
+        .count-fair {
+            color: #ea580c;
+        }
+
+        .count-poor {
+            color: #991b1b;
+        }
+
+        .empty {
+            color: #ccc;
+            text-align: center;
         }
 
         .loading {
             text-align: center;
             padding: 3rem;
-            color: #888780;
-            font-size: 14px;
-        }
-
-        .loading::after {
-            content: "";
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #888780;
-            margin-left: 4px;
-            animation: blink 1.4s infinite;
-            animation-fill-mode: both;
-        }
-
-        @keyframes blink {
-            0%, 20%, 50%, 80%, 100% { opacity: 1; }
-            40% { opacity: 0.3; }
-            60% { opacity: 0.5; }
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 2rem;
-            color: #888780;
+            color: #999;
             font-size: 14px;
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 1rem;
-            }
-
-            .header {
-                padding: 1.5rem;
+                padding: 1.5rem 1rem;
             }
 
             h1 {
-                font-size: 20px;
+                font-size: 24px;
             }
 
-            .table-wrapper {
-                font-size: 12px;
+            table {
+                font-size: 11px;
             }
 
             th, td {
-                padding: 8px 4px;
+                padding: 0.6rem 0.5rem;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -405,24 +428,17 @@
             <h1>APH Cohort Retention Analyzer</h1>
             <p class="subtitle">Upload your Salesforce CSV export to generate retention reports by episode of care</p>
 
-            <div class="upload-section" id="uploadSection">
+            <div class="upload-zone" id="uploadZone">
                 <label class="upload-label">Drag and drop your CSV file here, or click to browse</label>
-                <input type="file" id="csvFile" accept=".csv" />
                 <p class="upload-hint">Supports files up to 10MB</p>
+                <input type="file" id="csvFile" accept=".csv" />
             </div>
 
             <div id="errorContainer"></div>
-
             <div class="file-status" id="fileStatus">No file loaded</div>
         </div>
 
-        <div class="controls" id="controls">
-            <div class="control-group">
-                <label class="control-label">Data loaded and ready. Select a report view below.</label>
-            </div>
-        </div>
-
-        <div class="stats-grid" id="statsGrid" style="display: none;">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
                 <div class="stat-label">Total Episodes</div>
                 <div class="stat-value" id="totalOpps">-</div>
@@ -437,62 +453,46 @@
             </div>
             <div class="stat-card">
                 <div class="stat-label">Date Range</div>
-                <div class="stat-value" id="dateRange" style="font-size: 12px;">-</div>
+                <div class="stat-value" id="dateRange" style="font-size: 14px;">-</div>
             </div>
         </div>
 
-        <div class="tabs" id="tabs" style="display: none;"></div>
+        <div class="controls" id="controls">
+            <div class="control-grid">
+                <div class="control-group">
+                    <label class="control-label">Report Type</label>
+                    <select id="reportType" onchange="updateReport()">
+                        <option value="master">Master Report (All Data)</option>
+                        <option value="telemed">Telemed Only</option>
+                        <option value="inperson">In-Person Only</option>
+                        <option value="topProviders">Dr. Khan, McGee & Houck</option>
+                        <option value="otherProviders">All Other Providers</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Individual Provider</label>
+                    <select id="providerFilter" onchange="updateReport()">
+                        <option value="">View by Report Type Above</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-        <div id="tablesContainer"></div>
+        <div class="table-section visible" id="masterReportSection">
+            <div class="table-header">
+                <div class="table-title" id="reportTitle">Master Report (All Data)</div>
+                <button class="download-btn" onclick="downloadCurrentReport()">Download CSV</button>
+            </div>
+            <div class="table-wrapper">
+                <table id="reportTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        // IndexedDB setup
-        let db;
-        const dbName = 'CohortAnalyzerDB';
-        const storeName = 'csvData';
-
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(dbName, 1);
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve(db);
-                };
-
-                request.onupgradeneeded = (event) => {
-                    const database = event.target.result;
-                    if (!database.objectStoreNames.contains(storeName)) {
-                        database.createObjectStore(storeName);
-                    }
-                };
-            });
-        }
-
-        function saveToIndexedDB(data) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(storeName, 'readwrite');
-                const store = transaction.objectStore(storeName);
-                const request = store.put(data, 'csvData');
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve();
-            });
-        }
-
-        function loadFromIndexedDB() {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(storeName, 'readonly');
-                const store = transaction.objectStore(storeName);
-                const request = store.get('csvData');
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve(request.result);
-            });
-        }
-
         // Subject filters
         const evalSubjects = [
             'CA MED - PSYCH EVAL',
@@ -528,6 +528,52 @@
             return followUpSubjects.some(s => subject && subject.toUpperCase().includes(s.toUpperCase()));
         }
 
+        // IndexedDB setup
+        let db;
+        const dbName = 'CohortAnalyzerDB';
+        const storeName = 'csvData';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(storeName)) {
+                        database.createObjectStore(storeName);
+                    }
+                };
+            });
+        }
+
+        function saveToIndexedDB(data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put(data, 'csvData');
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve();
+            });
+        }
+
+        function loadFromIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.get('csvData');
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        // Data processing
+        let rawData = [];
+        let processedData = {};
+
         function getMonthString(date) {
             const d = new Date(date);
             return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
@@ -543,12 +589,10 @@
         function getMonthOffset(evalDate, visitDate) {
             const eval = new Date(evalDate);
             const visit = new Date(visitDate);
-
             const evalYear = eval.getFullYear();
             const evalMonth = eval.getMonth();
             const visitYear = visit.getFullYear();
             const visitMonth = visit.getMonth();
-
             const offset = 12 * (visitYear - evalYear) + (visitMonth - evalMonth) + 1;
             return Math.max(1, offset);
         }
@@ -591,9 +635,7 @@
         function processData(data) {
             const cohorts = {};
             const allProviders = new Set();
-            const processed = [];
 
-            // Single pass through data
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
                 const oppId = row['Opportunity ID 18 Digit'];
@@ -619,7 +661,6 @@
                     };
                 }
 
-                // Store eval and follow-up data separately
                 if (isEval) {
                     cohorts[cohortMonth].evalOpps.push({
                         oppId, provider, isTelemed
@@ -629,23 +670,38 @@
                         oppId, monthOffset, provider, isTelemed
                     });
                 }
-
-                processed.push({
-                    oppId, cohortMonth, monthOffset, provider, isTelemed, isEval, isFollowUp
-                });
             }
 
-            return { cohorts, providers: Array.from(allProviders).sort(), processed };
+            return { cohorts, providers: Array.from(allProviders).sort() };
         }
 
-        function generateReport(cohorts, processed, filters) {
+        function getPercentageClass(percentage) {
+            if (percentage === '') return '';
+            const pct = parseFloat(percentage);
+            if (pct >= 70) return 'pct-excellent';
+            if (pct >= 50) return 'pct-good';
+            if (pct >= 25) return 'pct-fair';
+            return 'pct-poor';
+        }
+
+        function getCountClass(count, cohortSize) {
+            if (count === '') return '';
+            const num = parseInt(count);
+            if (num === 0) return '';
+            const pct = (num / cohortSize) * 100;
+            if (pct >= 70) return 'count-excellent';
+            if (pct >= 50) return 'count-good';
+            if (pct >= 25) return 'count-fair';
+            return 'count-poor';
+        }
+
+        function generateReport(filters) {
             const report = {};
 
-            for (const cohortMonth in cohorts) {
-                const cohortData = cohorts[cohortMonth];
+            for (const cohortMonth in processedData.cohorts) {
+                const cohortData = processedData.cohorts[cohortMonth];
                 const offsetData = {};
 
-                // Get filtered eval opps for this cohort
                 let evalOppsInCohort = new Set();
                 for (let i = 0; i < cohortData.evalOpps.length; i++) {
                     const evalOpp = cohortData.evalOpps[i];
@@ -660,7 +716,6 @@
                     if (include) evalOppsInCohort.add(evalOpp.oppId);
                 }
 
-                // Count follow-ups only for opps in this filtered cohort
                 for (let i = 0; i < cohortData.followUps.length; i++) {
                     const fu = cohortData.followUps[i];
                     if (!evalOppsInCohort.has(fu.oppId)) continue;
@@ -687,7 +742,7 @@
             return report;
         }
 
-        function renderTable(report, containerId, title) {
+        function renderReport(report) {
             const cohortMonths = Object.keys(report).sort((a, b) => new Date(a) - new Date(b));
 
             let maxOffset = 0;
@@ -699,76 +754,114 @@
                 }
             }
 
-            let html = `<div class="table-section visible" id="${containerId}">
-                <div class="table-title">${title}</div>
-                <button class="download-btn" onclick="downloadTable('${containerId}', '${title}')">Download as CSV</button>
-                <div class="table-wrapper">
-                    <table>
-                        <thead><tr>
-                            <th>Cohort Month</th>
-                            <th>Size</th>`;
-
+            let headerHtml = '<tr><th>Cohort Month</th><th>Size</th>';
             for (let i = 1; i <= maxOffset; i++) {
-                html += `<th colspan="2">M${i}</th>`;
+                headerHtml += `<th colspan="2">Month ${i}</th>`;
             }
-
-            html += `</tr><tr><th colspan="2"></th>`;
+            headerHtml += '</tr><tr><th colspan="2"></th>';
             for (let i = 1; i <= maxOffset; i++) {
-                html += `<th>Count</th><th>%</th>`;
+                headerHtml += `<th>Count</th><th>%</th>`;
             }
-            html += `</tr></thead><tbody>`;
+            headerHtml += '</tr>';
 
+            document.getElementById('tableHead').innerHTML = headerHtml;
+
+            let bodyHtml = '';
             for (let i = 0; i < cohortMonths.length; i++) {
                 const cohortMonth = cohortMonths[i];
                 const cohort = report[cohortMonth];
-                html += `<tr><td>${cohortMonth}</td><td>${cohort.cohortSize}</td>`;
+                bodyHtml += `<tr><td>${cohortMonth}</td><td>${cohort.cohortSize}</td>`;
 
                 for (let j = 1; j <= maxOffset; j++) {
                     const opps = cohort.offsetData[j] ? cohort.offsetData[j].size : 0;
-                    const pct = cohort.cohortSize > 0 ? ((opps / cohort.cohortSize) * 100).toFixed(2) : '0.00';
-                    html += `<td>${opps}</td><td>${pct}%</td>`;
+                    const countDisplay = opps > 0 ? opps : '';
+                    const pctDisplay = cohort.cohortSize > 0 && opps > 0 ? ((opps / cohort.cohortSize) * 100).toFixed(1) : '';
+                    const pctClass = getPercentageClass(pctDisplay);
+                    const countClass = getCountClass(countDisplay, cohort.cohortSize);
+
+                    bodyHtml += `<td class="count ${countClass}">${countDisplay}</td>`;
+                    bodyHtml += `<td class="percentage ${pctClass}">${pctDisplay ? pctDisplay + '%' : ''}</td>`;
                 }
 
-                html += `</tr>`;
+                bodyHtml += '</tr>';
             }
 
-            html += `</tbody></table>
-                </div>
-            </div>`;
-
-            document.getElementById('tablesContainer').innerHTML += html;
+            document.getElementById('tableBody').innerHTML = bodyHtml;
         }
 
-        function downloadTable(containerId, title) {
-            const table = document.querySelector(`#${containerId} table`);
+        function updateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const providerFilter = document.getElementById('providerFilter').value;
+
+            let filters = {};
+            let title = '';
+
+            if (providerFilter) {
+                filters.providers = [providerFilter];
+                title = providerFilter;
+            } else {
+                switch (reportType) {
+                    case 'master':
+                        title = 'Master Report (All Data)';
+                        break;
+                    case 'telemed':
+                        title = 'Telemed Only';
+                        filters.telemedOnly = true;
+                        break;
+                    case 'inperson':
+                        title = 'In-Person Only';
+                        filters.inPersonOnly = true;
+                        break;
+                    case 'topProviders':
+                        title = 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)';
+                        const topProviders = processedData.providers.filter(p => {
+                            const upper = p.toUpperCase();
+                            return upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK');
+                        });
+                        if (topProviders.length > 0) {
+                            filters.providers = topProviders;
+                        }
+                        break;
+                    case 'otherProviders':
+                        title = 'All Other Providers (Combined)';
+                        const otherProviders = processedData.providers.filter(p => {
+                            const upper = p.toUpperCase();
+                            return !(upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK'));
+                        });
+                        if (otherProviders.length > 0) {
+                            filters.providers = otherProviders;
+                        }
+                        break;
+                }
+            }
+
+            document.getElementById('reportTitle').textContent = title;
+            const report = generateReport(filters);
+            renderReport(report);
+        }
+
+        function downloadCurrentReport() {
+            const title = document.getElementById('reportTitle').textContent;
+            const table = document.getElementById('reportTable');
             let csv = '';
 
-            table.querySelectorAll('thead tr:not(:last-child) th').forEach((th, idx) => {
-                if (idx > 0 && th.getAttribute('colspan') === '2') {
-                    csv += ',' + th.textContent;
-                } else if (idx > 0 && !th.getAttribute('colspan')) {
-                    // Skip, it's a subheader
-                } else if (idx === 0) {
-                    csv += th.textContent;
-                }
-            });
-
-            // Add subheader row
-            csv += '\nCohort Month,Cohort Size';
-            const headerRow = Array.from(table.querySelectorAll('thead tr:last-child th')).slice(2);
-            headerRow.forEach(th => {
-                csv += ',' + th.textContent;
-            });
-            csv += '\n';
-
-            table.querySelectorAll('tbody tr').forEach(tr => {
-                const cells = tr.querySelectorAll('td');
-                let row = '';
-                cells.forEach((td, idx) => {
-                    if (idx === 0) row += td.textContent;
-                    else row += ',' + td.textContent.trim();
+            const headerRows = table.querySelectorAll('thead tr');
+            headerRows.forEach(row => {
+                const cells = row.querySelectorAll('th');
+                const rowData = [];
+                cells.forEach(cell => {
+                    rowData.push(cell.textContent.trim());
                 });
-                csv += row + '\n';
+                csv += rowData.join(',') + '\n';
+            });
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+                cells.forEach(cell => {
+                    rowData.push(cell.textContent.trim());
+                });
+                csv += rowData.join(',') + '\n';
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -779,9 +872,71 @@
             a.click();
         }
 
-        function renderReports() {
-            document.getElementById('tablesContainer').innerHTML = '';
-            document.getElementById('statsGrid').style.display = 'grid';
+        // Event listeners
+        document.getElementById('uploadZone').addEventListener('click', () => {
+            document.getElementById('csvFile').click();
+        });
+
+        document.getElementById('uploadZone').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadZone').classList.add('drag-over');
+        });
+
+        document.getElementById('uploadZone').addEventListener('dragleave', () => {
+            document.getElementById('uploadZone').classList.remove('drag-over');
+        });
+
+        document.getElementById('uploadZone').addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.getElementById('uploadZone').classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                handleFileUpload(file);
+            }
+        });
+
+        document.getElementById('csvFile').addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        async function handleFileUpload(file) {
+            const reader = new FileReader();
+
+            reader.onload = async function(event) {
+                try {
+                    const text = event.target.result;
+                    rawData = parseCSV(text);
+
+                    if (rawData.length === 0) {
+                        throw new Error('CSV contains no data rows');
+                    }
+
+                    processedData = processData(rawData);
+
+                    await saveToIndexedDB({
+                        rawData: rawData,
+                        processedData: processedData,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    document.getElementById('errorContainer').innerHTML = '';
+                    document.getElementById('fileStatus').textContent = `Loaded ${rawData.length} records`;
+                    document.getElementById('fileStatus').classList.add('loaded');
+
+                    renderInitialReport();
+                } catch (error) {
+                    document.getElementById('errorContainer').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function renderInitialReport() {
+            document.getElementById('statsGrid').classList.add('visible');
+            document.getElementById('controls').classList.add('visible');
 
             const uniqueOpps = new Set();
             for (let i = 0; i < rawData.length; i++) {
@@ -809,112 +964,21 @@
                 document.getElementById('dateRange').textContent = `${minDate} to ${maxDate}`;
             }
 
-            // Master report
-            const masterReport = generateReport(processedData.cohorts, processedData.processed, {});
-            renderTable(masterReport, 'master-report', 'Master Report (All Data)');
-
-            // Telemed vs In-Person
-            const telemedReport = generateReport(processedData.cohorts, processedData.processed, { telemedOnly: true });
-            const inPersonReport = generateReport(processedData.cohorts, processedData.processed, { inPersonOnly: true });
-            renderTable(telemedReport, 'telemed-report', 'Telemed Only');
-            renderTable(inPersonReport, 'inperson-report', 'In-Person Only');
-
-            // Khan, McGee, Houck combined
-            const topProviders = processedData.providers.filter(p => {
-                const upper = p.toUpperCase();
-                return upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK');
-            });
-            if (topProviders.length > 0) {
-                const topProvidersReport = generateReport(processedData.cohorts, processedData.processed, { providers: topProviders });
-                renderTable(topProvidersReport, 'top-providers-report', 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)');
-            }
-
-            // All other providers
-            const otherProviders = processedData.providers.filter(p => {
-                const upper = p.toUpperCase();
-                return !(upper.includes('KHAN') || upper.includes('MCGEE') || upper.includes('HOUCK'));
-            });
-            if (otherProviders.length > 0) {
-                const otherReport = generateReport(processedData.cohorts, processedData.processed, { providers: otherProviders });
-                renderTable(otherReport, 'other-providers-report', 'All Other Providers (Combined)');
-            }
-
-            // Individual providers (not Khan, McGee, Houck)
-            for (let i = 0; i < otherProviders.length; i++) {
-                const provider = otherProviders[i];
+            // Populate provider dropdown
+            const providerSelect = document.getElementById('providerFilter');
+            providerSelect.innerHTML = '<option value="">View by Report Type Above</option>';
+            for (let i = 0; i < processedData.providers.length; i++) {
+                const provider = processedData.providers[i];
                 if (provider.trim()) {
-                    const providerReport = generateReport(processedData.cohorts, processedData.processed, { providers: [provider] });
-                    renderTable(providerReport, `provider-${provider.replace(/\s+/g, '-')}`, `${provider}`);
+                    const option = document.createElement('option');
+                    option.value = provider;
+                    option.textContent = provider;
+                    providerSelect.appendChild(option);
                 }
             }
 
-            document.getElementById('controls').classList.add('visible');
-            document.getElementById('tabs').style.display = 'flex';
+            updateReport();
         }
-
-        async function handleFileUpload(file) {
-            const reader = new FileReader();
-
-            reader.onload = async function(event) {
-                try {
-                    const text = event.target.result;
-                    rawData = parseCSV(text);
-
-                    if (rawData.length === 0) {
-                        throw new Error('CSV contains no data rows');
-                    }
-
-                    const result = processData(rawData);
-                    processedData = result;
-
-                    // Save to IndexedDB
-                    await saveToIndexedDB({
-                        rawData: rawData,
-                        processedData: processedData,
-                        timestamp: new Date().toISOString()
-                    });
-
-                    document.getElementById('errorContainer').innerHTML = '';
-                    document.getElementById('fileStatus').textContent = `Loaded ${rawData.length} records`;
-                    document.getElementById('fileStatus').classList.add('loaded');
-
-                    renderReports();
-                } catch (error) {
-                    document.getElementById('errorContainer').innerHTML = `<div class="error">Error: ${error.message}</div>`;
-                }
-            };
-
-            reader.readAsText(file);
-        }
-
-        // Event listeners
-        document.getElementById('uploadSection').addEventListener('click', () => {
-            document.getElementById('csvFile').click();
-        });
-
-        document.getElementById('uploadSection').addEventListener('dragover', (e) => {
-            e.preventDefault();
-            document.getElementById('uploadSection').classList.add('drag-over');
-        });
-
-        document.getElementById('uploadSection').addEventListener('dragleave', () => {
-            document.getElementById('uploadSection').classList.remove('drag-over');
-        });
-
-        document.getElementById('uploadSection').addEventListener('drop', (e) => {
-            e.preventDefault();
-            document.getElementById('uploadSection').classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.csv')) {
-                handleFileUpload(file);
-            }
-        });
-
-        document.getElementById('csvFile').addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                handleFileUpload(e.target.files[0]);
-            }
-        });
 
         // Initialize
         initDB().then(async () => {
@@ -924,7 +988,7 @@
                 processedData = savedData.processedData;
                 document.getElementById('fileStatus').textContent = `Loaded ${rawData.length} records (from last session)`;
                 document.getElementById('fileStatus').classList.add('loaded');
-                renderReports();
+                renderInitialReport();
             }
         }).catch(err => {
             console.error('IndexedDB error:', err);
