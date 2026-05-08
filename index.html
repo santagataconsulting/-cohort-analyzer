@@ -1330,37 +1330,48 @@
             const config = TRACK_CONFIG[currentTrack];
 
             const filters = {};
-            let title = '';
+            const titleParts = [];
 
+            // Apply report type filters first
+            switch (reportType) {
+                case 'master':
+                    titleParts.push('All Data');
+                    break;
+                case 'telemed':
+                    filters.telemedOnly = true;
+                    titleParts.push('Telemed');
+                    break;
+                case 'inperson':
+                    filters.inPersonOnly = true;
+                    titleParts.push('In-Person');
+                    break;
+                case 'topProviders':
+                    filters.providers = processedData.providers.filter(p => {
+                        const u = p.toUpperCase();
+                        return u.indexOf('KHAN') !== -1 || u.indexOf('MCGEE') !== -1 || u.indexOf('HOUCK') !== -1;
+                    });
+                    titleParts.push('Dr. Khan, McGee & Houck');
+                    break;
+                case 'otherProviders':
+                    filters.providers = processedData.providers.filter(p => {
+                        const u = p.toUpperCase();
+                        return u.indexOf('KHAN') === -1 && u.indexOf('MCGEE') === -1 && u.indexOf('HOUCK') === -1;
+                    });
+                    titleParts.push('All Other Providers');
+                    break;
+            }
+
+            // Apply individual provider filter on top (overrides report type's provider list if both apply)
             if (selectedProviders.size > 0) {
                 filters.providers = Array.from(selectedProviders);
                 if (selectedProviders.size === 1) {
-                    title = filters.providers[0];
+                    titleParts.push(filters.providers[0]);
                 } else {
-                    title = `${selectedProviders.size} Providers Selected`;
-                }
-            } else {
-                switch (reportType) {
-                    case 'master': title = 'Master Report (All Data)'; break;
-                    case 'telemed': title = 'Telemed Only'; filters.telemedOnly = true; break;
-                    case 'inperson': title = 'In-Person Only'; filters.inPersonOnly = true; break;
-                    case 'topProviders':
-                        title = 'Dr. Khan, Dr. McGee & Dr. Houck (Combined)';
-                        filters.providers = processedData.providers.filter(p => {
-                            const u = p.toUpperCase();
-                            return u.indexOf('KHAN') !== -1 || u.indexOf('MCGEE') !== -1 || u.indexOf('HOUCK') !== -1;
-                        });
-                        break;
-                    case 'otherProviders':
-                        title = 'All Other Providers (Combined)';
-                        filters.providers = processedData.providers.filter(p => {
-                            const u = p.toUpperCase();
-                            return u.indexOf('KHAN') === -1 && u.indexOf('MCGEE') === -1 && u.indexOf('HOUCK') === -1;
-                        });
-                        break;
+                    titleParts.push(`${selectedProviders.size} Providers`);
                 }
             }
 
+            const title = titleParts.join(' + ');
             document.getElementById('reportTitle').textContent = `${config.name}: ${title}`;
             const report = generateReport(filters);
             renderReport(report);
