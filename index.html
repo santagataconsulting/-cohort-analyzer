@@ -651,30 +651,33 @@
     </div>
 
     <script>
-        // Optimization: Pre-build subject lookup Sets (O(1) lookup vs O(n) array search)
+        // Optimization: Pre-build subject lookup Sets with normalized (lowercase) keys for O(1) case-insensitive lookup
+        // 7 eval subjects - used to determine cohort membership
         const evalSubjectSet = new Set([
-            'CA MED - PSYCH EVAL',
-            'CA TELE MED - PSYCH EVAL',
-            'MED - CA PSYCH EVAL',
-            'MED - PSYCH EVAL',
-            'MED - PSYCH. EVAL',
-            'TELE MED - CA PSYCH EVAL',
-            'TELE MED - PSYCH. EVAL'
+            'ca med - psych eval',
+            'ca tele med - psych eval',
+            'med - ca psych eval',
+            'med - psych eval',
+            'med - psych. eval',
+            'tele med - ca psych eval',
+            'tele med - psych. eval'
         ]);
 
+        // 14 follow-up subjects - used to count retention by month offset
         const followUpSubjectSet = new Set([
-            'CA MED - FOLLOW UP',
-            'CA MED/THER - FOLLOW UP',
-            'CA TELE MED - FOLLOW UP',
-            'CA TELE MED/THER - FOLLOW UP',
-            'MED - CA FOLLOW UP',
-            'MED - FOLLOW UP',
-            'MED/THER - CA FOLLOW UP',
-            'MED/THER - FOLLOW UP',
-            'TELE MED - FOLLOW UP',
-            'TELE MED - FOLLOW UP, MED - FOLLOW UP',
-            'TELE MED/THER - CA FOLLOW UP',
-            'TELE MED/THER - FOLLOW UP'
+            'ca med - follow up',
+            'ca med/ther - follow up',
+            'ca tele med - follow up',
+            'ca tele med/ther - follow up',
+            'med - ca follow up',
+            'med - follow up',
+            'med/ther - ca follow up',
+            'med/ther - follow up',
+            'tele med - ca follow up',
+            'tele med - follow up',
+            'tele med - follow up, med - follow up',
+            'tele med/ther - ca follow up',
+            'tele med/ther - follow up'
         ]);
 
         // Optimization: Cache for date parsing
@@ -778,7 +781,7 @@
                     oppId: values[oppIdx],
                     evalDate: values[evalDateIdx],
                     visitDate: values[dateIdx],
-                    subject: (values[subjectIdx] || '').toUpperCase(),
+                    subject: (values[subjectIdx] || '').toLowerCase().trim(),
                     provider: values[providerIdx] || ''
                 });
             }
@@ -822,7 +825,7 @@
 
                 const cohortMonth = getCohortMonthString(r.evalDate);
                 const monthOffset = getMonthOffset(r.evalDate, r.visitDate);
-                const isTelemed = r.subject.indexOf('TELE') !== -1;
+                const isTelemed = r.subject.indexOf('tele') !== -1;
 
                 // Fast Set lookup instead of array.some()
                 const isEval = evalSubjectSet.has(r.subject);
