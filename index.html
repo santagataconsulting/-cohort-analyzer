@@ -311,6 +311,148 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
+        .multiselect {
+            position: relative;
+        }
+
+        .multiselect-trigger {
+            padding: 0.65rem 1rem;
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .multiselect-trigger:hover {
+            border-color: var(--border-strong);
+        }
+
+        .multiselect.open .multiselect-trigger {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .multiselect-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            max-height: 400px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+
+        .multiselect.open .multiselect-dropdown {
+            display: flex;
+        }
+
+        .multiselect-search {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .multiselect-search input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .multiselect-search input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .multiselect-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .multiselect-action-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .multiselect-action-btn:hover {
+            background: var(--accent-secondary);
+            color: white;
+            border-color: var(--accent-secondary);
+        }
+
+        .multiselect-options {
+            overflow-y: auto;
+            max-height: 280px;
+        }
+
+        .multiselect-option {
+            padding: 0.55rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: background 0.15s;
+        }
+
+        .multiselect-option:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .multiselect-option input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .multiselect-option.hidden {
+            display: none;
+        }
+
+        .multiselect-options::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .multiselect-options::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        .multiselect-options::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 4px;
+        }
+
         .table-section {
             background: var(--bg-secondary);
             border: 1px solid var(--border-subtle);
@@ -623,10 +765,25 @@
                     </select>
                 </div>
                 <div class="control-group">
-                    <label class="control-label">Individual Provider</label>
-                    <select id="providerFilter" onchange="updateReport()">
-                        <option value="">View by Report Type Above</option>
-                    </select>
+                    <label class="control-label">Individual Provider(s)</label>
+                    <div class="multiselect" id="providerMultiselect">
+                        <div class="multiselect-trigger" id="providerTrigger" onclick="toggleProviderDropdown()">
+                            <span id="providerLabel">View by Report Type Above</span>
+                            <svg width="12" height="12" fill="none" viewBox="0 0 12 12" style="flex-shrink: 0;">
+                                <path d="M6 9L1 4h10z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="multiselect-dropdown" id="providerDropdown">
+                            <div class="multiselect-search">
+                                <input type="text" id="providerSearch" placeholder="Search providers..." onkeyup="filterProviders()" />
+                            </div>
+                            <div class="multiselect-actions">
+                                <button class="multiselect-action-btn" onclick="selectAllProviders()">Select All</button>
+                                <button class="multiselect-action-btn" onclick="clearAllProviders()">Clear All</button>
+                            </div>
+                            <div class="multiselect-options" id="providerOptions"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -894,7 +1051,8 @@
                     evalOppsInCohort.add(e.oppId);
                 }
 
-                // Filter follow-ups
+                // Filter follow-ups - count VISITS (records), not unique patients
+                // This matches behavioral health convention: cohort = unique patients, follow-ups = total visits
                 const followUps = cohortData.followUps;
                 for (let i = 0; i < followUps.length; i++) {
                     const fu = followUps[i];
@@ -903,9 +1061,9 @@
                     if (filters.inPersonOnly && fu.isTelemed) continue;
                     if (providerSet && !providerSet.has(fu.provider)) continue;
 
-                    let offsetSet = offsetData[fu.monthOffset];
-                    if (!offsetSet) offsetData[fu.monthOffset] = offsetSet = new Set();
-                    offsetSet.add(fu.oppId);
+                    // Increment count instead of adding to Set (counts visits)
+                    if (!offsetData[fu.monthOffset]) offsetData[fu.monthOffset] = 0;
+                    offsetData[fu.monthOffset]++;
                 }
 
                 report[cohortMonth] = {
@@ -924,7 +1082,7 @@
             for (const cm in report) {
                 for (const offset in report[cm].offsetData) {
                     const o = +offset;
-                    if (o > maxOffset) maxOffset = o;
+                    if (o > maxOffset && report[cm].offsetData[offset] > 0) maxOffset = o;
                 }
             }
 
@@ -955,8 +1113,7 @@
 
                 let cohortTotalFollowUps = 0;
                 for (let j = 1; j <= maxOffset; j++) {
-                    const offsetSet = cohort.offsetData[j];
-                    const opps = offsetSet ? offsetSet.size : 0;
+                    const opps = cohort.offsetData[j] || 0;
 
                     if (opps === 0) {
                         bodyParts.push('<td class="empty"></td><td class="empty"></td>');
@@ -994,16 +1151,79 @@
             document.getElementById('tableBody').innerHTML = bodyParts.join('');
         }
 
+        let selectedProviders = new Set();
+
+        function toggleProviderDropdown() {
+            document.getElementById('providerMultiselect').classList.toggle('open');
+        }
+
+        function filterProviders() {
+            const search = document.getElementById('providerSearch').value.toLowerCase();
+            const options = document.querySelectorAll('.multiselect-option');
+            options.forEach(opt => {
+                const text = opt.textContent.toLowerCase();
+                opt.classList.toggle('hidden', !text.includes(search));
+            });
+        }
+
+        function selectAllProviders() {
+            document.querySelectorAll('.multiselect-option:not(.hidden) input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+                selectedProviders.add(cb.value);
+            });
+            updateProviderLabel();
+            updateReport();
+        }
+
+        function clearAllProviders() {
+            document.querySelectorAll('.multiselect-option input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            selectedProviders.clear();
+            updateProviderLabel();
+            updateReport();
+        }
+
+        function toggleProvider(provider, checked) {
+            if (checked) selectedProviders.add(provider);
+            else selectedProviders.delete(provider);
+            updateProviderLabel();
+            updateReport();
+        }
+
+        function updateProviderLabel() {
+            const label = document.getElementById('providerLabel');
+            const count = selectedProviders.size;
+            if (count === 0) {
+                label.textContent = 'View by Report Type Above';
+            } else if (count === 1) {
+                label.textContent = Array.from(selectedProviders)[0];
+            } else {
+                label.textContent = `${count} providers selected`;
+            }
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const ms = document.getElementById('providerMultiselect');
+            if (ms && !ms.contains(e.target)) {
+                ms.classList.remove('open');
+            }
+        });
+
         function updateReport() {
             const reportType = document.getElementById('reportType').value;
-            const providerFilter = document.getElementById('providerFilter').value;
 
             const filters = {};
             let title = '';
 
-            if (providerFilter) {
-                filters.providers = [providerFilter];
-                title = providerFilter;
+            if (selectedProviders.size > 0) {
+                filters.providers = Array.from(selectedProviders);
+                if (selectedProviders.size === 1) {
+                    title = filters.providers[0];
+                } else {
+                    title = `${selectedProviders.size} Providers Selected`;
+                }
             } else {
                 switch (reportType) {
                     case 'master': title = 'Master Report (All Data)'; break;
@@ -1123,20 +1343,23 @@
                     `${fmt(processedData.dateRange.min)} - ${fmt(processedData.dateRange.max)}`;
             }
 
-            // Populate provider dropdown
-            const providerSelect = document.getElementById('providerFilter');
-            providerSelect.innerHTML = '<option value="">View by Report Type Above</option>';
+            // Populate provider multi-select
+            const providerOptions = document.getElementById('providerOptions');
+            providerOptions.innerHTML = '';
+            selectedProviders.clear();
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < processedData.providers.length; i++) {
                 const provider = processedData.providers[i];
                 if (provider.trim()) {
-                    const option = document.createElement('option');
-                    option.value = provider;
-                    option.textContent = provider;
-                    fragment.appendChild(option);
+                    const label = document.createElement('label');
+                    label.className = 'multiselect-option';
+                    const escapedProvider = provider.replace(/"/g, '&quot;');
+                    label.innerHTML = `<input type="checkbox" value="${escapedProvider}" onchange="toggleProvider(this.value, this.checked)" /> <span>${provider}</span>`;
+                    fragment.appendChild(label);
                 }
             }
-            providerSelect.appendChild(fragment);
+            providerOptions.appendChild(fragment);
+            updateProviderLabel();
 
             updateReport();
         }
