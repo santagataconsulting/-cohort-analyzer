@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APH Cohort Retention Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg-primary: #0a0a0f;
@@ -782,9 +783,9 @@
                 <svg class="upload-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 7.5m0 0L7.5 12M12 7.5v9"/>
                 </svg>
-                <label class="upload-label" id="uploadLabel">Drop your Med Management CSV file here or click to browse</label>
-                <p class="upload-hint">Supports files up to 10MB</p>
-                <input type="file" id="csvFile" accept=".csv" />
+                <label class="upload-label" id="uploadLabel">Drop your Med Management CSV or Excel file here or click to browse</label>
+                <p class="upload-hint">Supports CSV and Excel files (.csv, .xlsx, .xls) up to 10MB</p>
+                <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" />
             </div>
 
             <div id="errorContainer"></div>
@@ -1398,16 +1399,73 @@
             window.URL.revokeObjectURL(url);
         }
 
+        function parseExcel(arrayBuffer, config) {
+            const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: false });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Convert to array of arrays (header: 1 returns raw rows)
+            const rows = XLSX.utils.sheet_to_json(worksheet, { 
+                header: 1, 
+                raw: false,  // Get formatted strings (important for dates)
+                dateNF: 'm/d/yyyy'
+            });
+            
+            if (rows.length === 0) throw new Error('Excel file is empty');
+            
+            const headers = rows[0].map(h => String(h || '').trim());
+            const headerCount = headers.length;
+            
+            const oppIdx = headers.indexOf('Opportunity ID 18 Digit');
+            const evalDateIdx = headers.indexOf(config.evalDateField);
+            const dateIdx = headers.indexOf('Date');
+            const subjectIdx = headers.indexOf('Subject');
+            const providerIdx = headers.indexOf('Provider Name');
+            const firstEvalProviderIdx = headers.indexOf(config.evalProviderField);
+            const firstEvalTypeIdx = headers.indexOf(config.evalTypeField);
+
+            if (evalDateIdx === -1) throw new Error(`Missing column: ${config.evalDateField}`);
+            if (oppIdx === -1) throw new Error('Missing column: Opportunity ID 18 Digit');
+            if (firstEvalProviderIdx === -1) throw new Error(`Missing column: ${config.evalProviderField}`);
+            if (firstEvalTypeIdx === -1) throw new Error(`Missing column: ${config.evalTypeField}`);
+
+            const records = [];
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length === 0) continue;
+                
+                records.push({
+                    oppId: String(row[oppIdx] || ''),
+                    evalDate: String(row[evalDateIdx] || ''),
+                    visitDate: String(row[dateIdx] || ''),
+                    subject: String(row[subjectIdx] || '').toLowerCase().trim(),
+                    provider: String(row[providerIdx] || ''),
+                    firstEvalProvider: String(row[firstEvalProviderIdx] || ''),
+                    firstEvalType: String(row[firstEvalTypeIdx] || '').toLowerCase().trim()
+                });
+            }
+            return records;
+        }
+
         async function handleFileUpload(file) {
+            const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
             const reader = new FileReader();
+            
             reader.onload = async (event) => {
                 try {
                     dateCache.clear();
                     cohortMonthCache.clear();
 
                     const config = TRACK_CONFIG[currentTrack];
-                    const records = parseCSV(event.target.result, config);
-                    if (records.length === 0) throw new Error('CSV contains no data rows');
+                    let records;
+                    
+                    if (isExcel) {
+                        records = parseExcel(event.target.result, config);
+                    } else {
+                        records = parseCSV(event.target.result, config);
+                    }
+                    
+                    if (records.length === 0) throw new Error('File contains no data rows');
 
                     processedData = processData(records, config);
 
@@ -1425,7 +1483,12 @@
                     document.getElementById('errorContainer').innerHTML = `<div class="error">Error: ${error.message}</div>`;
                 }
             };
-            reader.readAsText(file);
+            
+            if (isExcel) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
         }
 
         function renderInitialReport() {
@@ -1497,7 +1560,7 @@
 
             // Update upload label
             document.getElementById('uploadLabel').textContent = 
-                `Drop your ${TRACK_CONFIG[track].name} CSV file here or click to browse`;
+                `Drop your ${TRACK_CONFIG[track].name} CSV or Excel file here or click to browse`;
 
             // Reset state
             selectedProviders.clear();
@@ -1543,7 +1606,9 @@
             e.preventDefault();
             uploadZone.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.csv')) handleFileUpload(file);
+            if (file && (file.name.endsWith('.csv') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                handleFileUpload(file);
+            }
         });
         document.getElementById('csvFile').addEventListener('change', (e) => {
             if (e.target.files[0]) handleFileUpload(e.target.files[0]);
