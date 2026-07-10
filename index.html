@@ -822,6 +822,14 @@
                     </select>
                 </div>
                 <div class="control-group">
+                    <label class="control-label">Population</label>
+                    <select id="populationFilter" onchange="updateReport()">
+                        <option value="all">All Ages</option>
+                        <option value="ca">Child & Adolescent Only</option>
+                        <option value="adult">Adult Only (Excludes CA)</option>
+                    </select>
+                </div>
+                <div class="control-group">
                     <label class="control-label">Individual Provider(s)</label>
                     <div class="multiselect" id="providerMultiselect">
                         <div class="multiselect-trigger" id="providerTrigger" onclick="toggleProviderDropdown()">
@@ -1084,6 +1092,18 @@
             const evalSubjectSet = config.evalSubjects;
             const followUpSubjectSet = config.followUpSubjects;
 
+            // First pass: identify each opportunity's first eval subject to determine CA status
+            const oppFirstEvalSubject = {};
+            for (let i = 0; i < records.length; i++) {
+                const r = records[i];
+                if (!r.oppId || !r.evalDate) continue;
+                if (!evalSubjectSet.has(r.subject)) continue;
+                
+                if (!oppFirstEvalSubject[r.oppId]) {
+                    oppFirstEvalSubject[r.oppId] = r.subject;
+                }
+            }
+
             for (let i = 0; i < records.length; i++) {
                 const r = records[i];
                 if (!r.oppId || !r.evalDate || !r.visitDate) continue;
@@ -1101,6 +1121,10 @@
                 const monthOffset = getMonthOffset(r.evalDate, r.visitDate);
                 const isTelemed = r.firstEvalType.indexOf('tele') !== -1;
 
+                // Determine CA status from the opp's first eval subject (word boundary match)
+                const firstEvalSubject = oppFirstEvalSubject[r.oppId] || '';
+                const isCA = /\bca\b/.test(firstEvalSubject);
+
                 const isEval = evalSubjectSet.has(r.subject);
                 const isFollowUp = followUpSubjectSet.has(r.subject);
 
@@ -1115,14 +1139,16 @@
                     cohort.evalOpps.push({ 
                         oppId: r.oppId, 
                         provider: attributedProvider, 
-                        isTelemed 
+                        isTelemed,
+                        isCA
                     });
                 } else {
                     cohort.followUps.push({ 
                         oppId: r.oppId, 
                         monthOffset, 
                         provider: attributedProvider, 
-                        isTelemed 
+                        isTelemed,
+                        isCA
                     });
                 }
             }
@@ -1165,6 +1191,8 @@
                     const e = evalOpps[i];
                     if (filters.telemedOnly && !e.isTelemed) continue;
                     if (filters.inPersonOnly && e.isTelemed) continue;
+                    if (filters.caOnly && !e.isCA) continue;
+                    if (filters.adultOnly && e.isCA) continue;
                     if (providerSet && !providerSet.has(e.provider)) continue;
                     evalOppsInCohort.add(e.oppId);
                 }
@@ -1175,6 +1203,8 @@
                     if (!evalOppsInCohort.has(fu.oppId)) continue;
                     if (filters.telemedOnly && !fu.isTelemed) continue;
                     if (filters.inPersonOnly && fu.isTelemed) continue;
+                    if (filters.caOnly && !fu.isCA) continue;
+                    if (filters.adultOnly && fu.isCA) continue;
                     if (providerSet && !providerSet.has(fu.provider)) continue;
 
                     if (!offsetData[fu.monthOffset]) offsetData[fu.monthOffset] = 0;
@@ -1328,6 +1358,7 @@
 
         function updateReport() {
             const reportType = document.getElementById('reportType').value;
+            const populationFilter = document.getElementById('populationFilter').value;
             const config = TRACK_CONFIG[currentTrack];
 
             const filters = {};
@@ -1362,7 +1393,16 @@
                     break;
             }
 
-            // Apply individual provider filter on top (overrides report type's provider list if both apply)
+            // Apply population filter
+            if (populationFilter === 'ca') {
+                filters.caOnly = true;
+                titleParts.push('Child & Adolescent');
+            } else if (populationFilter === 'adult') {
+                filters.adultOnly = true;
+                titleParts.push('Adult');
+            }
+
+            // Apply individual provider filter on top
             if (selectedProviders.size > 0) {
                 filters.providers = Array.from(selectedProviders);
                 if (selectedProviders.size === 1) {
