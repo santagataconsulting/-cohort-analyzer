@@ -910,7 +910,6 @@
                     { value: 'telemed', label: 'Telemed Only' },
                     { value: 'inperson', label: 'In-Person Only' },
                     { value: 'topProviders', label: 'Dr. Khan, McGee & Houck' },
-                    { value: 'houckOnly', label: 'Dr. Houck Only' },
                     { value: 'otherProviders', label: 'All Other Providers' }
                 ]
             },
@@ -1384,12 +1383,6 @@
                         return u.indexOf('KHAN') !== -1 || u.indexOf('MCGEE') !== -1 || u.indexOf('HOUCK') !== -1;
                     });
                     titleParts.push('Dr. Khan, McGee & Houck');
-                    break;
-                case 'houckOnly':
-                    filters.providers = processedData.providers.filter(p => {
-                        return p.toUpperCase().indexOf('HOUCK') !== -1;
-                    });
-                    titleParts.push('Dr. Houck');
                     break;
                 case 'otherProviders':
                     filters.providers = processedData.providers.filter(p => {
